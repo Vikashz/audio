@@ -82,7 +82,7 @@ class validate:
                 if len(p) > 100:
                     return {'status': False, 'message':"participants can not be larger than 1000 characters"}
                 if n > 10:
-                    return {'status': False, 'message':"participants can not be larger than 1000 characters"}
+                    return {'status': False, 'message':"participants can not be more than 10"}
         if not audioFileMetadata.get("title_of_the_audiobook"):
             return {'status': False, 'message': "Title of the audiobook was not given, it is mandatory"}
         elif len(audioFileMetadata.get("title_of_the_audiobook")) > 100:
