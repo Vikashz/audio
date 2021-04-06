@@ -12,6 +12,7 @@ def create_record(audioFileType, audioFileMetadata):
     if int(audioFileMetadata["id"]) in distinct_id:
         return {'status': False, 'message': "Record with ID {} alredy exists".format(audioFileMetadata["id"])}
     audioFileMetadata["uploaded_time"] = datetime.now()
+    audioFileMetadata["audioFileType"] = audioFileType
     updated = mongo.audio.insert_one(audioFileMetadata)
     if updated:
         return {'status': True, 'message': "Record created successfully"}
@@ -45,7 +46,21 @@ def upd_record(audioFileType, audioFileMetadata, audioFileID):
 
 
 def verify_fields(audioFileType, audioFileMetadata):
-    if audioFileType.lower() == "song":
+    temp = validate(audioFileType, audioFileMetadata)
+    file_type = temp.validate_audioFileType()
+    if file_type:
+        res = temp.validate_fileds()
+        return res
+    return {'status': False, 'message':"Unknown audio file type"} 
+
+class validate:
+
+    def __init__(self, audioFileType, audioFileMetadata):
+        self.audioFileType = audioFileType.lower()
+        self.audioFileMetadata = audioFileMetadata
+
+    def validate_fileds(self):
+        audioFileMetadata = self.audioFileMetadata
         if not audioFileMetadata.get("id"):
             return {'status': False, 'message': "id was not given, id is mandatory"}
         if not audioFileMetadata.get("name_of_the_song"):
@@ -54,16 +69,10 @@ def verify_fields(audioFileType, audioFileMetadata):
             return {'status': False, 'message':"Name of the song can not be larger than 1000 characters"}
         if not audioFileMetadata.get("duration_in_seconds"):
             return {'status': False, 'message':"Duration of the song was not given, it is mandatory"}
-       
-    elif audioFileType.lower() == "podcast":
-        if not audioFileMetadata.get("id"):
-            return {'status': False, 'message': "id was not given, id is mandatory"}
         if not audioFileMetadata.get("name_of_the_podcast"):
             return {'status': False, 'message': "Name of the podcast was not given, it is mandatory"}
         elif len(audioFileMetadata.get("name_of_the_podcast")) > 100:
             return {'status': False, 'message':"Name of the podcast can not be larger than 1000 characters"}
-        if not audioFileMetadata.get("duration_in_seconds"):
-            return {'status': False, 'message':"Duration of the song was not given, it is mandatory"}
         if not audioFileMetadata.get("host"):
             return {'status': False, 'message':"Host was not given, it is mandatory"}
         elif len(audioFileMetadata.get("host")) > 100:
@@ -74,22 +83,20 @@ def verify_fields(audioFileType, audioFileMetadata):
                     return {'status': False, 'message':"participants can not be larger than 1000 characters"}
                 if n > 10:
                     return {'status': False, 'message':"participants can not be larger than 1000 characters"}
-
-    elif audioFileType.lower() == "audiobook":
-        if not audioFileMetadata.get("id"):
-            return {'status': False, 'message': "id was not given, id is mandatory"}
         if not audioFileMetadata.get("title_of_the_audiobook"):
             return {'status': False, 'message': "Title of the audiobook was not given, it is mandatory"}
         elif len(audioFileMetadata.get("title_of_the_audiobook")) > 100:
             return {'status': False, 'message':"Title of the audiobook can not be larger than 1000 characters"}
-        if not audioFileMetadata.get("duration_in_seconds"):
-            return {'status': False, 'message':"Duration of the song was not given, it is mandatory"}
         if not audioFileMetadata.get("author"):
             return {'status': False, 'message':"Author of the title was not given, it is mandatory"}
         elif len(audioFileMetadata.get("author")) > 100:
             return {'status': False, 'message':"Author of the title can not be larger than 1000 characters"}
         if not audioFileMetadata.get("narrator"):
             return {'status': False, 'message':"Narrator was not given, it is mandatory"}
-    
-    else:
-        return {'status': False, 'message':"Unknown audio file type"}
+        return {'status': True}
+
+    def validate_audioFileType(self):
+        audioFileType = self.audioFileType
+        if audioFileType not in ["song", "podcast", "audiobook"]:
+            return False
+        return True

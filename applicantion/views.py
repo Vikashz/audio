@@ -45,9 +45,7 @@ def view_create_record():
     """
     status = 200
     try:
-        print("Hello")
         json_data = request.get_json(force=True)
-        print(json_data)
         audioFileType = json_data.get("audioFileType", "")
         audioFileMetadata = json_data.get("audioFileMetadata", {})
 
@@ -120,9 +118,9 @@ def view_get_record(audioFileType, audioFileID):
     status = 200
     try:
         if not audioFileID == "all":
-            res = mongo.audio.find({"audioFileType": audioFileType, "id": int(audioFileID)})
+            res = list(mongo.audio.find_one({"audioFileType": audioFileType, "id": int(audioFileID)}))
         else:
-            res = mongo.audio.find({"audioFileType": audioFileType})
+            res = list(mongo.audio.find({"audioFileType": audioFileType}))
         if res:
             response = { "status" : True, "data" : res }
         else:
@@ -130,4 +128,4 @@ def view_get_record(audioFileType, audioFileID):
     except Exception as e:
         response = {"status": False, "message": str(e)}
         status = 400
-    return Response(json.dumps(response, default=json_util.default ), mimetype="application/json")
+    return Response(json.dumps(response, default=json_util.default ), mimetype="application/json"), status
