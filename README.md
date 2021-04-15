@@ -1,5 +1,4 @@
 # audio
-Task given by filed.com for python developer role.
 Coding exercise:
 Write a Flask / FastAPI / Django Web API that simulates the behavior of an audio file
 server while using a MongoDB / SQL database.
